@@ -331,6 +331,47 @@ describe("generation processor", () => {
     expect(mocks.creditService.releaseUnusedReservedCredits).toHaveBeenCalled();
     expect(releaseCallCount).toBe(1);
   });
+
+  it("publishes credits update after successful platform capture", async () => {
+    const { processor, publisher } = createTestFixture({
+      generation: makeGeneration({
+        platformOutputs: [
+          makePlatformOutput({ platform: "spotify", status: "pending" }),
+        ],
+      }),
+    });
+
+    await processor.process({ generationRequestId: "gen_1" });
+
+    const creditsEvents = publisher.events.filter(
+      (e) => e.type === "credits_update",
+    );
+    expect(creditsEvents.length).toBeGreaterThanOrEqual(1);
+    expect(creditsEvents[0]).toMatchObject({
+      type: "credits_update",
+      generationRequestId: "gen_1",
+      availableCredits: 97,
+      reservedCredits: 1,
+    });
+  });
+
+  it("publishes credits update after final release", async () => {
+    const { processor, publisher } = createTestFixture({
+      generation: makeGeneration({
+        platformOutputs: [
+          makePlatformOutput({ platform: "spotify", status: "pending" }),
+        ],
+      }),
+    });
+
+    await processor.process({ generationRequestId: "gen_1" });
+
+    const creditsEvents = publisher.events.filter(
+      (e) => e.type === "credits_update",
+    );
+    // At least one event from capture and one from release.
+    expect(creditsEvents.length).toBeGreaterThanOrEqual(2);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -529,6 +570,7 @@ function createMockCreditService(): Record<
     | "captureCreditsForSuccessfulPlatform"
     | "releaseUnusedReservedCredits"
     | "findReservationForGeneration"
+    | "readWalletBalance"
   >,
   ReturnType<typeof vi.fn>
 > {
@@ -536,5 +578,13 @@ function createMockCreditService(): Record<
     captureCreditsForSuccessfulPlatform: vi.fn(async () => ({})),
     releaseUnusedReservedCredits: vi.fn(async () => ({})),
     findReservationForGeneration: vi.fn(async () => null),
+    readWalletBalance: vi.fn(async () => ({
+      id: "wallet_1",
+      userId: "user_1",
+      availableCredits: 97,
+      reservedCredits: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })),
   };
 }

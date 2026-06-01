@@ -1,5 +1,16 @@
 # Changelog
 
+## Phase 10 — Realtime Events and SSE
+
+Added Zod-validated event contracts in `@melotech/realtime` for `PlatformUpdateEvent`, `GenerationUpdateEvent`, and `CreditsUpdateEvent`, with a union `WorkerEvent` schema and inline platform enum values to avoid cross-package Zod v4 schema recognition issues.
+Updated `EventPublisher` interface and both `RedisEventPublisher` and `InMemoryEventPublisher` to support `publishCreditsUpdate`, with Zod validation before every publish so malformed events never reach Redis or the browser.
+Implemented the worker-side `publishCreditsUpdate` helper in `GenerationProcessor` that reads wallet balance after each credit capture and release, then emits a `credits_update` event with the current `availableCredits` and `reservedCredits`.
+Created authenticated SSE endpoint `GET /api/generations/{id}/events` in the web app that verifies generation ownership before opening a Redis pub/sub subscription scoped to `generation:{id}`, streams events as `text/event-stream`, and cleans up the Redis subscriber on client disconnect.
+Added `formatSseEvent` and `encodeText` utilities in `apps/web/src/lib/sse-helpers.ts` for consistent SSE wire formatting, and extracted `verifyGenerationOwnership` and `createSseStream` into `apps/web/src/lib/sse-service.ts` behind injectable dependencies for testability.
+Created `useGenerationEvents` React hook in `apps/web/src/hooks/use-generation-events.ts` that opens an `EventSource` to the SSE endpoint, updates platform output state, generation status, and credit balance in real time, handles malformed events gracefully, and closes the connection automatically on unmount or generation id change.
+Added comprehensive unit coverage for all new layers: Zod schema validation (valid/invalid payloads), publisher behavior (serialize, reject invalid), SSE helpers (format, encode), SSE service (ownership check, stream forwarding, Redis cleanup), SSE endpoint (404 for foreign generations, 401 for unauthenticated), and frontend hook (open URL, handle events, unmount cleanup, state reset on id change).
+Verified the entire monorepo test suite (`pnpm test`) and production build (`pnpm build`) pass cleanly with zero regressions.
+
 ## Phase 09 — Backend API, User Rate Limits, and Credit Endpoints
 
 Added `PrismaCreditStore` in `@melotech/billing` to bridge the `CreditStore` interface with Prisma transactions, enabling production use of `CreditService`.

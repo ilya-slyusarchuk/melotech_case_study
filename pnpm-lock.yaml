@@ -295,6 +295,9 @@ importers:
       ioredis:
         specifier: ^5.10.1
         version: 5.10.1
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@types/node':
         specifier: ^22.15.3

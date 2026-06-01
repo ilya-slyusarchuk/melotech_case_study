@@ -130,6 +130,9 @@ export class GenerationProcessor {
         reservationId: finalGeneration.creditReservation.id,
         idempotencyKey: `release:${generationRequestId}`,
       });
+
+      // Publish updated credit balance after release.
+      await this.publishCreditsUpdate(finalGeneration);
     }
 
     // 17. Publish final generation event.
@@ -138,6 +141,22 @@ export class GenerationProcessor {
       generationRequestId,
       status: finalStatus as "completed" | "partial" | "failed",
     });
+  }
+
+  private async publishCreditsUpdate(
+    generation: WorkerGeneration,
+  ): Promise<void> {
+    const wallet = await this.deps.creditService.readWalletBalance(
+      generation.userId,
+    );
+    if (wallet) {
+      await this.deps.eventPublisher.publishCreditsUpdate({
+        type: "credits_update",
+        generationRequestId: generation.id,
+        availableCredits: wallet.availableCredits,
+        reservedCredits: wallet.reservedCredits,
+      });
+    }
   }
 
   private async processPlatform(
@@ -194,6 +213,9 @@ export class GenerationProcessor {
           outputStored: true,
           idempotencyKey: `capture:${generation.id}:${platform}`,
         });
+
+        // Publish updated credit balance after capture.
+        await this.publishCreditsUpdate(generation);
       }
 
       // 11. Publish platform update event.
@@ -230,6 +252,9 @@ export class GenerationProcessor {
             outputStored: true,
             idempotencyKey: `capture:${generation.id}:${platform}`,
           });
+
+          // Publish updated credit balance after capture.
+          await this.publishCreditsUpdate(generation);
         }
 
         await this.deps.eventPublisher.publishPlatformUpdate({
