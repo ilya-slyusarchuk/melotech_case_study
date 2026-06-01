@@ -2,6 +2,30 @@
 
 - Write code as if you are a Senior Developer with +10 years of experience
 
+# Project documentation and context
+
+Before writing code, load the relevant planning documents to understand the assignment, the company, and the architecture.
+
+Entry point:
+
+- `docs/00_README.md` — overview of the documentation pack and recommended reading order.
+
+Melotech as a company:
+
+- `docs/01_MELOTECH_PROJECT_OVERVIEW.md` — public overview of Melotech, its products, and its mission.
+
+Assignment overview:
+
+- `docs/02_ASSIGNMENT_OVERVIEW.md` — summary of the take-home assignment, success criteria, and scope.
+
+Project structure and architecture:
+
+- `docs/03_PROJECT_STRUCTURE_AND_ARCHITECTURE.md` — structural solution decisions, service boundaries, data ownership, and technology choices.
+
+Design language:
+
+- `docs/04_DESIGN_LANGUAGE.md` — UI identity, visual tokens, and component rules.
+
 # Fundamental Principles
 - Write clean, simple, readable code
 - Implement features in the simplest possible way
