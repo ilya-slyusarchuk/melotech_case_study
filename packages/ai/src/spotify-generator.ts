@@ -30,8 +30,10 @@ export class SpotifyGenerator implements PlatformGenerator<"spotify"> {
       schema: spotifyOutputSchema,
       systemPrompt: [
         "You create validated Spotify distribution metadata for AI-generated music.",
-        "Return JSON only with title, genre, mood, bpm, instruments, and description.",
-        "Use bpm as a positive integer and instruments as a non-empty array.",
+        "You must return exactly one JSON object and nothing else.",
+        'Required JSON shape: {"title":"string","genre":"string","mood":"string","bpm":120,"instruments":["string"],"description":"string"}',
+        "Use bpm as a positive integer number, not a string.",
+        "Use instruments as a non-empty array of strings.",
       ].join("\n"),
       userPrompt: buildPlatformUserPrompt({
         enrichedPrompt: input.enrichedPrompt,

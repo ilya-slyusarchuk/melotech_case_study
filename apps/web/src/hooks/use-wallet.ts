@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { isWalletData, walletUpdatedEventName } from "./wallet-events";
 
 export type WalletData = {
   availableCredits: number;
@@ -46,7 +47,22 @@ export function useWallet() {
 
     // Poll every 10 seconds as a safety net.
     const interval = setInterval(fetchWallet, 10_000);
-    return () => clearInterval(interval);
+
+    function handleWalletUpdated(event: Event) {
+      if (event instanceof CustomEvent && isWalletData(event.detail)) {
+        setWallet(event.detail);
+        setError(null);
+        setLoading(false);
+      }
+    }
+
+    // Usage actions can update credits outside this hook's component tree.
+    window.addEventListener(walletUpdatedEventName, handleWalletUpdated);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener(walletUpdatedEventName, handleWalletUpdated);
+    };
   }, [fetchWallet]);
 
   return { wallet, loading, error, refresh: fetchWallet };

@@ -2,9 +2,9 @@ import OpenAI from "openai";
 import type { AIAdapter, AIGenerateTextInput } from "./adapter.js";
 import { AIProviderError } from "./errors.js";
 
-export const OLLAMA_BASE_URL_ENV = "OLLAMA_BASE_URL";
-export const OLLAMA_API_KEY_ENV = "OLLAMA_API_KEY";
-export const OLLAMA_MODEL_ENV = "OLLAMA_MODEL";
+export const AI_BASE_URL_ENV = "AI_BASE_URL";
+export const AI_API_KEY_ENV = "AI_API_KEY";
+export const AI_MODEL_ENV = "AI_MODEL";
 
 // Every provider adapter should expose the same env categories.
 // Base URL, API key, and model must all be validated before use.
@@ -67,9 +67,9 @@ export function createOllamaProviderFromEnv(
   env: Record<string, string | undefined> = process.env,
 ): OllamaProvider {
   return new OllamaProvider({
-    baseUrl: readRequiredEnv(env, OLLAMA_BASE_URL_ENV),
-    apiKey: readRequiredEnv(env, OLLAMA_API_KEY_ENV),
-    model: readRequiredEnv(env, OLLAMA_MODEL_ENV),
+    baseUrl: readRequiredEnv(env, AI_BASE_URL_ENV),
+    apiKey: readRequiredEnv(env, AI_API_KEY_ENV),
+    model: readRequiredEnv(env, AI_MODEL_ENV),
   });
 }
 

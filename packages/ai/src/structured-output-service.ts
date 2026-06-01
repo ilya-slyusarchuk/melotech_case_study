@@ -34,6 +34,7 @@ export class StructuredOutputService {
       return firstValidation.value;
     }
 
+    logValidationFailure(request.metadata, "initial", firstValidation.error);
     return this.repairUntilValid(request, firstResponse, firstValidation.error);
   }
 
@@ -59,8 +60,12 @@ export class StructuredOutputService {
 
     for (let attempt = 0; attempt <= maxProviderRetries; attempt += 1) {
       try {
-        return await this.adapter.generateText(input);
+        logModelRequest(input, attempt);
+        const response = await this.adapter.generateText(input);
+        logModelResponse(input, attempt, response);
+        return response;
       } catch (error) {
+        logModelError(input, attempt, error);
         lastError = error;
       }
     }
@@ -98,6 +103,11 @@ export class StructuredOutputService {
         return repairedValidation.value;
       }
 
+      logValidationFailure(
+        request.metadata,
+        `repair:${repair}`,
+        repairedValidation.error,
+      );
       responseToRepair = repairResponse;
       lastError = repairedValidation.error;
     }
@@ -168,6 +178,91 @@ export class StructuredOutputService {
       throw error;
     }
   }
+}
+
+function logModelRequest(input: AIGenerateTextInput, attempt: number): void {
+  const label = formatLogLabel(input, attempt);
+  console.info(`${label} request system prompt:\n${input.systemPrompt}`);
+  console.info(`${label} request user prompt:\n${input.userPrompt}`);
+}
+
+function logModelResponse(
+  input: AIGenerateTextInput,
+  attempt: number,
+  response: string,
+): void {
+  console.info(
+    `${formatLogLabel(input, attempt)} raw model response:\n${response}`,
+  );
+}
+
+function logModelError(
+  input: AIGenerateTextInput,
+  attempt: number,
+  error: unknown,
+): void {
+  console.error(
+    `${formatLogLabel(input, attempt)} provider error: ${formatErrorForDiagnostics(error)}`,
+  );
+}
+
+function logValidationFailure(
+  metadata: AIGenerationMetadata | undefined,
+  phase: string,
+  error: JSONExtractionError | SchemaValidationError,
+): void {
+  console.error(
+    `[ai:${metadata?.platform ?? "unknown"}:${phase}] validation failed: ${describeValidationError(error)}`,
+  );
+}
+
+function formatLogLabel(input: AIGenerateTextInput, attempt: number): string {
+  const platform = input.metadata?.platform ?? "unknown";
+  const repair = input.metadata?.repair
+    ? `:repair-${input.metadata.repairAttempt}`
+    : "";
+  return `[ai:${platform}${repair}:attempt-${attempt + 1}]`;
+}
+
+function formatErrorForDiagnostics(error: unknown): string {
+  const details = collectErrorDetails(error);
+  return details.length > 0 ? details.join(" | caused by: ") : String(error);
+}
+
+function collectErrorDetails(error: unknown): string[] {
+  if (!(error instanceof Error)) {
+    return [String(error)];
+  }
+
+  const details = [formatSingleError(error)];
+  const cause = error.cause;
+
+  if (cause) {
+    details.push(...collectErrorDetails(cause));
+  }
+
+  return details;
+}
+
+function formatSingleError(error: Error): string {
+  const fields = [
+    error.name,
+    error.message,
+    readErrorField(error, "status"),
+    readErrorField(error, "code"),
+    readErrorField(error, "type"),
+  ].filter(Boolean);
+
+  return fields.join(" ");
+}
+
+function readErrorField(error: Error, field: string): string | null {
+  const value = (error as unknown as Record<string, unknown>)[field];
+  if (typeof value === "string" || typeof value === "number") {
+    return `${field}=${value}`;
+  }
+
+  return null;
 }
 
 type RepairPromptInput = {

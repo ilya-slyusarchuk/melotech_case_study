@@ -38,6 +38,7 @@ export async function GET(
   // publishing or other commands.
   const config = getWebConfig();
   const redisSubscriber = new Redis(config.REDIS_URL, {
+    lazyConnect: true,
     maxRetriesPerRequest: null,
   });
 

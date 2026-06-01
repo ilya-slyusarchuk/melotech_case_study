@@ -50,6 +50,20 @@ describe("PlatformOutputCard", () => {
     expect(screen.getByText("Generation failed.")).toBeInTheDocument();
   });
 
+  it("renders the platform failure reason when available", () => {
+    render(
+      <PlatformOutputCard
+        platform="spotify"
+        status="failed"
+        errorMessage="The AI provider could not complete the request."
+      />,
+    );
+
+    expect(
+      screen.getByText("The AI provider could not complete the request."),
+    ).toBeInTheDocument();
+  });
+
   it("renders cache badge for cache fallback", () => {
     render(
       <PlatformOutputCard

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
@@ -15,10 +15,9 @@ import {
   AUDIENCE_AGE_RANGES,
   AUDIENCE_GENDERS,
 } from "@melotech/shared";
-import { PLATFORM_CREDIT_COSTS } from "@melotech/billing";
 import type { Platform } from "@melotech/shared";
 import { cn } from "../../lib/utils";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 
 /**
  * Generation form component.
@@ -29,8 +28,10 @@ import { AlertTriangle } from "lucide-react";
  */
 export function GenerationForm({
   availableCredits = 0,
+  platformCosts,
 }: {
   availableCredits?: number;
+  platformCosts?: Record<Platform, number>;
 }) {
   const router = useRouter();
   const [prompt, setPrompt] = useState("");
@@ -40,9 +41,24 @@ export function GenerationForm({
   const [gender, setGender] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [costs, setCosts] = useState<Record<Platform, number> | null>(
+    platformCosts ?? null,
+  );
+
+  // If platformCosts prop is not provided, fetch from the API.
+  useEffect(() => {
+    if (platformCosts) return;
+
+    fetch("/api/credits/pricing")
+      .then((res) => res.json())
+      .then((data: Record<Platform, number>) => setCosts(data))
+      .catch(() => {
+        // Silent fail — the form still works without a cost preview.
+      });
+  }, [platformCosts]);
 
   const costPreview = selectedPlatforms.reduce(
-    (sum, platform) => sum + (PLATFORM_CREDIT_COSTS[platform] ?? 0),
+    (sum, platform) => sum + (costs?.[platform] ?? 0),
     0,
   );
 
@@ -166,7 +182,7 @@ export function GenerationForm({
                         {PLATFORM_DISPLAY_METADATA[platform].label}
                       </Badge>
                       <span className="text-text-tertiary text-xs">
-                        {PLATFORM_CREDIT_COSTS[platform]} cr
+                        {costs?.[platform] ?? 0} cr
                       </span>
                     </span>
                   </button>

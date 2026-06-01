@@ -26,6 +26,7 @@ export interface PlatformOutputCardProps {
   status: PlatformOutputStatus;
   content?: Record<string, unknown> | null;
   source?: "LLM" | "CACHE" | null;
+  errorMessage?: string | null;
 }
 
 const platformIcons: Record<Platform, React.ReactNode> = {
@@ -79,6 +80,7 @@ export function PlatformOutputCard({
   status,
   content,
   source,
+  errorMessage,
 }: PlatformOutputCardProps) {
   const meta = PLATFORM_DISPLAY_METADATA[platform];
   const isCompleted = status === "completed" || status === "completed_from_cache";
@@ -130,9 +132,11 @@ export function PlatformOutputCard({
         )}
 
         {status === "failed" && (
-          <div className="flex h-24 items-center justify-center gap-2">
+          <div className="flex min-h-24 items-center justify-center gap-2">
             <AlertCircle className="h-4 w-4 text-error" />
-            <span className="text-sm text-error">Generation failed.</span>
+            <span className="text-sm text-error">
+              {errorMessage ?? "Generation failed."}
+            </span>
           </div>
         )}
       </CardContent>

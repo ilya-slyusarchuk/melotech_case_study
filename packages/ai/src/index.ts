@@ -7,6 +7,7 @@ export * from "./json-extraction.js";
 export * from "./ollama-provider.js";
 export * from "./platform-generator.js";
 export * from "./platform-generator-registry.js";
+export * from "./platform-generator-support.js";
 export * from "./spotify-generator.js";
 export * from "./tiktok-generator.js";
 export * from "./platform-output-schemas.js";

@@ -35,4 +35,17 @@ describe("LedgerTable", () => {
     expect(screen.getByText("+100")).toBeInTheDocument();
     expect(screen.getByText("-2")).toBeInTheDocument();
   });
+
+  it("caps ledger height and scrolls overflowing entries", () => {
+    const entries = Array.from({ length: 20 }, (_, index) => ({
+      id: `entry_${index}`,
+      type: "grant",
+      amount: 100,
+      createdAt: "2024-01-01T00:00:00Z",
+    }));
+
+    const { container } = render(<LedgerTable entries={entries} />);
+
+    expect(container.querySelector(".max-h-96.overflow-y-auto")).toBeTruthy();
+  });
 });

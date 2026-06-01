@@ -268,6 +268,9 @@ export class GenerationProcessor {
         // 14. If fallback does not exist, mark platform failed.
         const errorMessage =
           error instanceof Error ? error.message : "Unknown generation error";
+        console.error(
+          `Generation ${generation.id} failed for ${platform}: ${errorMessage}`,
+        );
 
         await this.deps.platformOutputRepository.markFailedForWorker(
           generation.id,

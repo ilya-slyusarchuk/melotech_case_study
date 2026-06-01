@@ -6,6 +6,10 @@ import { BullMqGenerationQueueProducer } from "@melotech/queue";
 import { GenerationRequestRepository } from "@melotech/db";
 import { RedisRateLimiter } from "./rate-limiter";
 
+type QueueRedisConnectionOptions = ConstructorParameters<
+  typeof BullMqGenerationQueueProducer
+>[0];
+
 let _config: ReturnType<typeof getWebConfig> | null = null;
 
 function getConfig() {
@@ -41,10 +45,24 @@ export function getGenerationRateLimiter(): RedisRateLimiter {
 // BullMQ queue producer for enqueueing generation jobs.
 export function getQueueProducer(): BullMqGenerationQueueProducer {
   const config = getConfig();
-  return new BullMqGenerationQueueProducer({
-    host: new URL(config.REDIS_URL).hostname,
-    port: Number(new URL(config.REDIS_URL).port) || 6379,
-  });
+  return new BullMqGenerationQueueProducer(
+    buildBullMqRedisConnectionOptions(config.REDIS_URL),
+  );
+}
+
+export function buildBullMqRedisConnectionOptions(
+  redisUrl: string,
+): QueueRedisConnectionOptions {
+  const url = new URL(redisUrl);
+  const db = url.pathname.slice(1);
+
+  return {
+    host: url.hostname,
+    port: Number(url.port) || 6379,
+    username: url.username ? decodeURIComponent(url.username) : undefined,
+    password: url.password ? decodeURIComponent(url.password) : undefined,
+    db: db ? Number(db) : undefined,
+  };
 }
 
 // Database repositories used by API routes.

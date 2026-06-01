@@ -42,6 +42,7 @@ describe("handleGenerationEventsRequest", () => {
     } as unknown as GenerationRequestRepository;
 
     const mockRedis = {
+      status: "ready",
       subscribe: vi.fn().mockResolvedValue(undefined),
       on: vi.fn().mockReturnThis(),
       off: vi.fn(),
@@ -68,6 +69,7 @@ describe("handleGenerationEventsRequest", () => {
     } as unknown as GenerationRequestRepository;
 
     const mockRedis = {
+      status: "ready",
       subscribe: vi.fn().mockResolvedValue(undefined),
       on: vi.fn().mockReturnThis(),
       off: vi.fn(),
@@ -93,6 +95,7 @@ describe("createSseStream", () => {
     const subscribe = vi.fn().mockResolvedValue(undefined);
     const on = vi.fn().mockReturnThis();
     const mockRedis = {
+      status: "ready",
       subscribe,
       on,
       off: vi.fn(),
@@ -129,6 +132,7 @@ describe("createSseStream", () => {
       });
 
     const mockRedis = {
+      status: "ready",
       subscribe,
       on,
       off: vi.fn(),
@@ -169,6 +173,7 @@ describe("createSseStream", () => {
     const off = vi.fn();
 
     const mockRedis = {
+      status: "ready",
       subscribe: vi.fn().mockResolvedValue(undefined),
       on: vi.fn().mockReturnThis(),
       off,
@@ -189,5 +194,34 @@ describe("createSseStream", () => {
     expect(off).toHaveBeenCalledWith("error", expect.any(Function));
     expect(unsubscribe).toHaveBeenCalledWith("generation:gen_1");
     expect(disconnect).toHaveBeenCalled();
+  });
+
+  it("waits for lazy Redis subscribers to connect before subscribing", async () => {
+    const subscribe = vi.fn().mockResolvedValue(undefined);
+    const connect = vi.fn().mockImplementation(async () => {
+      mockRedis.status = "ready";
+    });
+    const mockRedis = {
+      status: "wait",
+      connect,
+      subscribe,
+      on: vi.fn().mockReturnThis(),
+      off: vi.fn(),
+      unsubscribe: vi.fn().mockResolvedValue(undefined),
+      disconnect: vi.fn(),
+    };
+
+    const stream = createSseStream(
+      "gen_1",
+      mockRedis as unknown as import("ioredis").default,
+    );
+    const reader = stream.getReader();
+
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    expect(connect).toHaveBeenCalled();
+    expect(subscribe).toHaveBeenCalledWith("generation:gen_1");
+
+    await reader.cancel();
   });
 });

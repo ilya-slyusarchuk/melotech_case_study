@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { PlatformOutputCard } from "../../../../components/generation/platform-output-card";
 import { Badge } from "../../../../components/ui/badge";
@@ -32,34 +32,53 @@ export default function GenerationDetailPage() {
     error: sseError,
   } = useGenerationEvents(generationRequestId);
 
-  // Fetch initial generation data.
-  useEffect(() => {
+  const fetchGeneration = useCallback(async () => {
     if (!generationRequestId) return;
 
-    async function fetchGeneration() {
-      try {
-        const response = await fetch(`/api/generations/${generationRequestId}`);
+    try {
+      const response = await fetch(`/api/generations/${generationRequestId}`);
 
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError("Generation not found.");
-          } else {
-            setError("Failed to load generation.");
-          }
-          return;
+      if (!response.ok) {
+        if (response.status === 404) {
+          setError("Generation not found.");
+        } else {
+          setError("Failed to load generation.");
         }
-
-        const data = (await response.json()) as { generation: GenerationData };
-        setGeneration(data.generation);
-      } catch {
-        setError("Failed to load generation.");
-      } finally {
-        setLoading(false);
+        return;
       }
+
+      const data = (await response.json()) as { generation: GenerationData };
+      setGeneration(data.generation);
+      setError(null);
+    } catch {
+      setError("Failed to load generation.");
+    } finally {
+      setLoading(false);
+    }
+  }, [generationRequestId]);
+
+  // Fetch initial generation data.
+  useEffect(() => {
+    fetchGeneration();
+  }, [fetchGeneration]);
+
+  const terminalSseOutputKey = useMemo(() => {
+    return Object.values(sseOutputs)
+      .filter((output) => isTerminalPlatformStatus(output.status))
+      .map((output) => `${output.platform}:${output.status}`)
+      .sort()
+      .join("|");
+  }, [sseOutputs]);
+
+  useEffect(() => {
+    if (!terminalSseOutputKey && !isTerminalGenerationStatus(sseStatus)) {
+      return;
     }
 
+    // Realtime events intentionally carry small status payloads only.
+    // Refetch after terminal updates so completed cards render persisted content.
     fetchGeneration();
-  }, [generationRequestId]);
+  }, [fetchGeneration, sseStatus, terminalSseOutputKey]);
 
   if (loading) {
     return (
@@ -148,6 +167,7 @@ export default function GenerationDetailPage() {
             status={output.status}
             content={output.content as Record<string, unknown> | null}
             source={output.source}
+            errorMessage={output.errorMessage}
           />
         ))}
       </div>
@@ -176,6 +196,7 @@ type GenerationData = {
     status: PlatformOutputStatus;
     content?: unknown;
     source?: "LLM" | "CACHE" | null;
+    errorMessage?: string | null;
   }>;
 };
 
@@ -193,4 +214,16 @@ function StatusBadge({ status }: { status: string }) {
       {status.replace("_", " ").toUpperCase()}
     </Badge>
   );
+}
+
+function isTerminalPlatformStatus(status: string): boolean {
+  return (
+    status === "completed" ||
+    status === "completed_from_cache" ||
+    status === "failed"
+  );
+}
+
+function isTerminalGenerationStatus(status: string | null): boolean {
+  return status === "completed" || status === "partial" || status === "failed";
 }

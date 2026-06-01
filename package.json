@@ -6,15 +6,20 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "web:dev": "cd apps/web && npx dotenv -e ../../.env -- next dev",
+    "worker:dev": "cd apps/worker && npx dotenv -e ../../.env -- tsx watch src/index.ts",
+    "db:generate": "npx dotenv -e .env -- pnpm --filter @melotech/db db:generate",
+    "db:push": "npx dotenv -e .env -- pnpm --filter @melotech/db db:push",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\""
   },
   "devDependencies": {
-    "turbo": "^2.5.3",
-    "typescript": "^5.8.3",
+    "@types/node": "^22.15.3",
+    "dotenv-cli": "^11.0.0",
     "prettier": "^3.5.3",
-    "@types/node": "^22.15.3"
+    "turbo": "^2.5.3",
+    "typescript": "^5.8.3"
   }
 }

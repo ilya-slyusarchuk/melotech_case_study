@@ -30,7 +30,8 @@ export class YouTubeGenerator implements PlatformGenerator<"youtube"> {
       schema: youtubeOutputSchema,
       systemPrompt: [
         "You create search-oriented YouTube metadata for AI-generated music.",
-        "Return JSON only with seoTitle, description, and tags.",
+        "You must return exactly one JSON object and nothing else.",
+        'Required JSON shape: {"seoTitle":"string","description":"string","tags":["string"]}',
         "Tags must be a non-empty array of discoverability phrases.",
       ].join("\n"),
       userPrompt: buildPlatformUserPrompt({

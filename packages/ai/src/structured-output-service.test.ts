@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { AIAdapter, AIGenerateTextInput } from "./adapter.js";
 import { AIProviderError, StructuredOutputError } from "./errors.js";
 import { spotifyOutputSchema } from "./platform-output-schemas.js";
@@ -81,6 +81,39 @@ describe("StructuredOutputService", () => {
       }),
     ).rejects.toThrow(StructuredOutputError);
     expect(adapter.calls).toHaveLength(2);
+  });
+
+  it("logs nested provider cause details for debugging", async () => {
+    const providerCause = Object.assign(new Error("json mode unsupported"), {
+      status: 400,
+      code: "invalid_request",
+      type: "bad_request",
+    });
+    const logSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const adapter = new SequenceAdapter([
+      new AIProviderError({ reason: "request_failed" }, providerCause),
+    ]);
+    const service = new StructuredOutputService(adapter);
+
+    await expect(
+      service.generate({
+        schema: spotifyOutputSchema,
+        systemPrompt: "Return Spotify JSON.",
+        userPrompt: "Create metadata.",
+        temperature: 0.2,
+        maxProviderRetries: 0,
+        maxRepairs: 0,
+      }),
+    ).rejects.toThrow(StructuredOutputError);
+
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining("json mode unsupported status=400"),
+    );
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining("code=invalid_request"),
+    );
+
+    logSpy.mockRestore();
   });
 
   it("repairs invalid schema output", async () => {

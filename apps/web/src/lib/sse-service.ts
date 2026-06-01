@@ -69,6 +69,7 @@ export function createSseStream(
   let messageHandler: ((channel: string, message: string) => void) | null =
     null;
   let errorHandler: ((error: Error) => void) | null = null;
+  let cancelled = false;
 
   return new ReadableStream<Uint8Array>({
     start(controller) {
@@ -93,14 +94,27 @@ export function createSseStream(
       redisSubscriber.on("message", messageHandler);
       redisSubscriber.on("error", errorHandler);
 
-      // Subscribe after handlers are attached.
-      redisSubscriber.subscribe(channel).catch((error) => {
-        console.error(`Failed to subscribe to ${channel}:`, error);
-        controller.error(error);
-      });
+      // Subscribe only after the connection is ready. ioredis performs normal
+      // ready-check commands while connecting, and Redis rejects those commands
+      // once a connection has entered subscriber mode.
+      waitForRedisReady(redisSubscriber)
+        .then(() => {
+          if (cancelled) {
+            return;
+          }
+          return redisSubscriber.subscribe(channel);
+        })
+        .catch((error) => {
+          if (cancelled) {
+            return;
+          }
+          console.error(`Failed to subscribe to ${channel}:`, error);
+          controller.error(error);
+        });
     },
 
     cancel() {
+      cancelled = true;
       // Called when the client disconnects. Clean up Redis subscription.
       if (messageHandler) {
         redisSubscriber.off("message", messageHandler);
@@ -113,5 +127,39 @@ export function createSseStream(
       });
       redisSubscriber.disconnect();
     },
+  });
+}
+
+async function waitForRedisReady(redis: Redis): Promise<void> {
+  // Unit-test doubles only implement the methods used by the stream.
+  if (!("status" in redis)) {
+    return;
+  }
+
+  if (redis.status === "ready") {
+    return;
+  }
+
+  if (redis.status === "wait") {
+    await redis.connect();
+    return;
+  }
+
+  await new Promise<void>((resolve, reject) => {
+    const handleReady = () => {
+      cleanup();
+      resolve();
+    };
+    const handleError = (error: Error) => {
+      cleanup();
+      reject(error);
+    };
+    const cleanup = () => {
+      redis.off("ready", handleReady);
+      redis.off("error", handleError);
+    };
+
+    redis.once("ready", handleReady);
+    redis.once("error", handleError);
   });
 }

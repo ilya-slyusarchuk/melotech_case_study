@@ -2,17 +2,54 @@
 // This file is the entry point for the standalone worker service.
 
 import Redis from "ioredis";
-import { getSharedConfig } from "@melotech/config";
+import { getSharedConfig, type SharedConfig } from "@melotech/config";
 import {
   GenerationRequestRepository,
   PlatformOutputRepository,
+  SimilarResultCacheRepository,
 } from "@melotech/db";
-import { PlatformGeneratorRegistry } from "@melotech/ai";
-import { SimilarResultService } from "@melotech/embeddings";
-import { CreditService } from "@melotech/billing";
+import {
+  OllamaProvider,
+  PlatformGeneratorRegistry,
+  SpotifyGenerator,
+  StructuredOutputService,
+  TikTokGenerator,
+  YouTubeGenerator,
+} from "@melotech/ai";
+import {
+  OpenAIEmbeddingProvider,
+  SimilarResultService,
+  type SimilarResultServiceOptions,
+} from "@melotech/embeddings";
+import { CreditService, PrismaCreditStore } from "@melotech/billing";
 import { RedisEventPublisher } from "@melotech/realtime";
 import { GenerationProcessor } from "./processor.js";
 import { startWorker } from "./bootstrap.js";
+
+type WorkerPlatformGenerationOptions = {
+  maxProviderRetries: number;
+  maxRepairs: number;
+};
+
+export function buildPlatformGenerationOptions(
+  config: Pick<
+    SharedConfig,
+    "GENERATION_RETRY_LIMIT" | "LLM_REPAIR_RETRY_LIMIT"
+  >,
+): WorkerPlatformGenerationOptions {
+  return {
+    maxProviderRetries: config.GENERATION_RETRY_LIMIT,
+    maxRepairs: config.LLM_REPAIR_RETRY_LIMIT,
+  };
+}
+
+export function buildSimilarResultOptions(
+  config: Pick<SharedConfig, "SIMILARITY_THRESHOLD">,
+): SimilarResultServiceOptions {
+  return {
+    similarityThreshold: config.SIMILARITY_THRESHOLD,
+  };
+}
 
 // This function wires production dependencies and starts the worker.
 // It is only executed when this file is the main module.
@@ -29,13 +66,47 @@ export async function main(): Promise<void> {
 
   const generationRepository = new GenerationRequestRepository(prisma);
   const platformOutputRepository = new PlatformOutputRepository(prisma);
+  const similarResultCacheRepository = new SimilarResultCacheRepository(prisma);
 
-  // Full dependency wiring would continue here with AI adapter,
-  // embedding adapter, generator registry, similar result service,
-  // credit service, and event publisher.
-  console.log(
-    "Worker bootstrap complete. Full dependency wiring is application-specific.",
+  const aiAdapter = new OllamaProvider({
+    baseUrl: config.AI_BASE_URL,
+    apiKey: config.AI_API_KEY,
+    model: config.AI_MODEL,
+  });
+  const structuredOutputService = new StructuredOutputService(aiAdapter);
+  const platformGenerationOptions = buildPlatformGenerationOptions(config);
+  const generatorRegistry = new PlatformGeneratorRegistry([
+    new SpotifyGenerator(structuredOutputService, platformGenerationOptions),
+    new TikTokGenerator(structuredOutputService, platformGenerationOptions),
+    new YouTubeGenerator(structuredOutputService, platformGenerationOptions),
+  ]);
+
+  const embeddingAdapter = new OpenAIEmbeddingProvider({
+    apiKey: config.EMBEDDING_API_KEY,
+    model: config.EMBEDDING_MODEL,
+    baseURL: config.EMBEDDING_BASE_URL,
+  });
+  const similarResultService = new SimilarResultService(
+    embeddingAdapter,
+    similarResultCacheRepository,
+    buildSimilarResultOptions(config),
   );
+
+  const creditService = new CreditService(new PrismaCreditStore(prisma));
+  const eventPublisher = new RedisEventPublisher(redisConnection);
+  const processor = new GenerationProcessor({
+    generationRepository,
+    platformOutputRepository,
+    generatorRegistry,
+    similarResultService,
+    creditService,
+    eventPublisher,
+  });
+
+  await startWorker({
+    redisConnection,
+    processor,
+  });
 }
 
 if (import.meta.main) {

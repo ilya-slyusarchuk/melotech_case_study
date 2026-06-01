@@ -36,6 +36,7 @@ describe("OllamaProvider", () => {
       model: "gpt-oss:120b",
       temperature: 0.3,
     });
+    expect(body.response_format).toBeUndefined();
     expect(body.messages).toEqual([
       { role: "system", content: "System rules." },
       { role: "user", content: "User request." },
@@ -66,8 +67,8 @@ describe("OllamaProvider", () => {
   it("fails fast when the required model env variable is missing", () => {
     expect(() =>
       createOllamaProviderFromEnv({
-        OLLAMA_BASE_URL: "https://ollama.com/api",
-        OLLAMA_API_KEY: "secret-key",
+        AI_BASE_URL: "https://ollama.com/api",
+        AI_API_KEY: "secret-key",
       }),
     ).toThrow(AIProviderError);
   });

@@ -41,7 +41,7 @@ const validWebEnv = () => ({
   ...validSharedEnv(),
   BETTER_AUTH_URL: "https://app.example.com/api/auth",
   BETTER_AUTH_SECRET: "auth-secret",
-  PUBLIC_APP_URL: "https://app.example.com",
+  NEXT_PUBLIC_APP_URL: "https://app.example.com",
   NEXT_PUBLIC_APP_ENV: "test",
 });
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signInWithEmail, useSession } from "../../lib/auth-client";
@@ -29,8 +29,15 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   // Redirect authenticated users away from login.
+  // useEffect avoids updating the router during render, which triggers
+  // React's "Cannot update during render" warning.
+  useEffect(() => {
+    if (session?.user) {
+      router.push("/generate");
+    }
+  }, [session, router]);
+
   if (session?.user) {
-    router.push("/generate");
     return null;
   }
 

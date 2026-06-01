@@ -6,6 +6,7 @@ import { UsageChart } from "../../../components/usage/usage-chart";
 import { LedgerTable } from "../../../components/usage/ledger-table";
 import { Button } from "../../../components/ui/button";
 import { Loader2 } from "lucide-react";
+import { notifyWalletUpdated } from "../../../hooks/wallet-events";
 
 /**
  * Usage page.
@@ -57,6 +58,7 @@ export default function UsagePage() {
       };
 
       setWallet(walletData);
+      notifyWalletUpdated(walletData);
       setLedger(ledgerData.entries);
       setUsage(usageData);
     } catch {

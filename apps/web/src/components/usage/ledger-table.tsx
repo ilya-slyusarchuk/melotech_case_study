@@ -42,7 +42,7 @@ export function LedgerTable({ entries }: LedgerTableProps) {
               <span className="text-right">Date</span>
             </div>
 
-            <div className="flex flex-col">
+            <div className="flex max-h-96 flex-col overflow-y-auto pr-1">
               {entries.map((entry) => (
                 <div
                   key={entry.id}

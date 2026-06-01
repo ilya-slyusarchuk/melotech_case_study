@@ -16,6 +16,7 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "db:generate": "prisma generate --schema prisma/schema.prisma",
+    "db:push": "prisma db push --schema prisma/schema.prisma",
     "db:migrate:create": "prisma migrate dev --schema prisma/schema.prisma --create-only",
     "db:migrate:dev": "prisma migrate dev --schema prisma/schema.prisma",
     "db:migrate:deploy": "prisma migrate deploy --schema prisma/schema.prisma",

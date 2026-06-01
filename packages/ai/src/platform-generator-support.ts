@@ -36,7 +36,12 @@ export function buildPlatformUserPrompt(input: {
     ...input.platformInstructions.map((instruction) => `- ${instruction}`),
     "",
     ...buildAudienceSection(input.audience),
-    "Return one JSON object only. Do not include markdown or prose outside JSON.",
+    "Output contract:",
+    "- Return one valid JSON object only.",
+    "- Do not include markdown fences.",
+    "- Do not include prose before or after the JSON object.",
+    "- Use double-quoted JSON keys and string values.",
+    "- Do not use trailing commas.",
   ].join("\n");
 }
 

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { useWallet } from "./use-wallet";
+import { notifyWalletUpdated } from "./wallet-events";
 
 describe("useWallet", () => {
   beforeEach(() => {
@@ -77,5 +78,35 @@ describe("useWallet", () => {
 
     vi.advanceTimersByTime(10_000);
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+  });
+
+  it("updates wallet when another component broadcasts a wallet change", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve({ availableCredits: 10, reservedCredits: 0 }),
+        }),
+      ),
+    );
+
+    const { result } = renderHook(() => useWallet());
+
+    await waitFor(() => {
+      expect(result.current.wallet?.availableCredits).toBe(10);
+    });
+
+    act(() => {
+      notifyWalletUpdated({ availableCredits: 110, reservedCredits: 5 });
+    });
+
+    await waitFor(() => {
+      expect(result.current.wallet).toEqual({
+        availableCredits: 110,
+        reservedCredits: 5,
+      });
+    });
   });
 });

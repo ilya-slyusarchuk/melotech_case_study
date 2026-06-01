@@ -30,8 +30,10 @@ export class TikTokGenerator implements PlatformGenerator<"tiktok"> {
       schema: tiktokOutputSchema,
       systemPrompt: [
         "You create concise TikTok metadata for AI-generated music promotion.",
-        "Return JSON only with hook and hashtags.",
-        "Hashtags must be exactly three strings and each one must start with #.",
+        "You must return exactly one JSON object and nothing else.",
+        'Required JSON shape: {"hook":"string","hashtags":["#tagOne","#tagTwo","#tagThree"]}',
+        "Hashtags must be exactly three strings.",
+        "Each hashtag string must start with #.",
       ].join("\n"),
       userPrompt: buildPlatformUserPrompt({
         enrichedPrompt: input.enrichedPrompt,
