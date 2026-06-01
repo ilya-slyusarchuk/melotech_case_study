@@ -104,7 +104,7 @@ If mulch is not available in the project, omit it.
 Mulch injects project-specific conventions, patterns, decisions, and other learnings into your context.
 Use `ml prime --files src/foo.ts` to load only records relevant to specific files.
 
-**Before completing your task**, review your work for insights worth preserving — conventions discovered,
+**Before completing your task**, review the available domains and make sure to record the information in the most relevant one. If there are no relevant ones or the domain is new, create one with mulch, review your work for insights worth preserving — conventions discovered,
 patterns applied, failures encountered, or decisions made — and record them:
 ```bash
 ml record <domain> --type <convention|pattern|failure|decision|reference|guide> --description "..."

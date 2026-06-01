@@ -46,6 +46,7 @@ services:
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
       OLLAMA_API_KEY: ${OLLAMA_API_KEY}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
+      OLLAMA_MODEL: ${OLLAMA_MODEL}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
     expose:
       - "3000"
@@ -66,6 +67,7 @@ services:
       REDIS_URL: ${REDIS_URL}
       OLLAMA_API_KEY: ${OLLAMA_API_KEY}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
+      OLLAMA_MODEL: ${OLLAMA_MODEL}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
     depends_on:
       postgres:

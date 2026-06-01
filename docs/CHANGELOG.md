@@ -1,5 +1,12 @@
 # Changelog
 
+## Phase 05 — AI Adapters and Structured Output Reliability
+
+Added the `@melotech/ai` generation reliability layer with a provider-agnostic `AIAdapter`, safe error taxonomy, Ollama provider, JSON extraction, platform output schemas, and a structured output service for validation, retries, and repairs.
+The Ollama provider now uses the official OpenAI TypeScript SDK against Ollama's OpenAI-compatible chat completions endpoint, while still reading explicit Ollama base URL, API key, and model env variables.
+The provider keeps authentication server-side, normalizes Ollama base URLs to the OpenAI-compatible `/v1` root, disables SDK retries so service-level retry counts remain deterministic, and wraps provider failures without exposing secrets.
+Added focused unit coverage for adapter substitution, provider request and failure handling, platform schema validation, JSON extraction, safe errors, repair prompts, retry limits, and preventing unvalidated output from being returned.
+
 ## Phase 04 — Prompt Enrichment and Audience Targeting
 
 Added deterministic audience prompt enrichment in `@melotech/shared`, including original concept preservation, optional audience sections, and a shared adaptation instruction for future platform generators.
