@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
   audienceTargetingSchema,
+  buildAudienceDisplayChips,
+  buildAudiencePrompt,
   createGenerationRequestSchema,
   PLATFORM_DISPLAY_METADATA,
   platformSchema,
@@ -82,6 +84,90 @@ describe("audience targeting schema", () => {
     expect(
       audienceTargetingSchema.safeParse({ gender: "unknown" }).success,
     ).toBe(false);
+  });
+});
+
+describe("audience prompt builder", () => {
+  const rawPrompt = "Create a Brazilian funk launch concept for late nights.";
+
+  it("returns the original prompt when no audience is provided", () => {
+    expect(buildAudiencePrompt(rawPrompt)).toBe(rawPrompt);
+  });
+
+  it("includes region when provided", () => {
+    const prompt = buildAudiencePrompt(rawPrompt, { region: "Brazil" });
+
+    expect(prompt).toContain("Original music concept:");
+    expect(prompt).toContain(rawPrompt);
+    expect(prompt).toContain("Target audience:");
+    expect(prompt).toContain("- Target region: Brazil");
+  });
+
+  it("includes age range when provided", () => {
+    const prompt = buildAudiencePrompt(rawPrompt, { age_range: "18-24" });
+
+    expect(prompt).toContain("- Target age range: 18-24");
+  });
+
+  it("includes gender when provided", () => {
+    const prompt = buildAudiencePrompt(rawPrompt, { gender: "female" });
+
+    expect(prompt).toContain("- Target gender: Female");
+  });
+
+  it("does not render undefined fields", () => {
+    const prompt = buildAudiencePrompt(rawPrompt, { region: "Mexico" });
+
+    expect(prompt).toContain("- Target region: Mexico");
+    expect(prompt).not.toContain("Target age range:");
+    expect(prompt).not.toContain("Target gender:");
+  });
+
+  it("preserves the original prompt content", () => {
+    const prompt = buildAudiencePrompt(rawPrompt, {
+      region: "Brazil",
+      age_range: "25-34",
+      gender: "all",
+    });
+
+    expect(prompt).toContain(rawPrompt);
+    expect(prompt).toContain(
+      "local cultural preferences, platform behavior, language expectations, music discovery habits, genre affinity, and emotional positioning",
+    );
+  });
+});
+
+describe("audience display chips", () => {
+  it("renders a region label correctly", () => {
+    expect(buildAudienceDisplayChips({ region: "Brazil" })).toEqual([
+      { key: "region", label: "Region", value: "Brazil" },
+    ]);
+  });
+
+  it("does not create an empty label for missing age range", () => {
+    expect(
+      buildAudienceDisplayChips({ region: "Brazil", ageRange: null }),
+    ).toEqual([{ key: "region", label: "Region", value: "Brazil" }]);
+  });
+
+  it("does not create an empty label for missing gender", () => {
+    expect(buildAudienceDisplayChips({ region: "Brazil", gender: null })).toEqual(
+      [{ key: "region", label: "Region", value: "Brazil" }],
+    );
+  });
+
+  it("renders provided age range and gender labels", () => {
+    expect(
+      buildAudienceDisplayChips({
+        region: "Mexico",
+        ageRange: "18-24",
+        gender: "non_binary",
+      }),
+    ).toEqual([
+      { key: "region", label: "Region", value: "Mexico" },
+      { key: "ageRange", label: "Age range", value: "18-24" },
+      { key: "gender", label: "Gender", value: "Non-binary" },
+    ]);
   });
 });
 

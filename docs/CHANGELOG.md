@@ -1,5 +1,11 @@
 # Changelog
 
+## Phase 04 — Prompt Enrichment and Audience Targeting
+
+Added deterministic audience prompt enrichment in `@melotech/shared`, including original concept preservation, optional audience sections, and a shared adaptation instruction for future platform generators.
+Added audience display chip metadata helpers so stored region, age range, and gender can be rendered consistently without empty labels.
+Updated generation request creation so raw prompts, enriched prompts, and independent audience fields are persisted together before queued generation work can read the request.
+
 ## Phase 03 — Credits, Billing Ledger, and Usage Analytics
 
 Added the `@melotech/billing` domain with server-owned platform pricing, reservation cost calculation, wallet creation, demo wallet ensuring, credit grants, reservations, platform captures, releases, idempotency handling, ledger history, usage analytics, and client credit-field rejection.

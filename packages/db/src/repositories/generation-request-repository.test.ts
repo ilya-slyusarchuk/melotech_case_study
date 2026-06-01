@@ -25,6 +25,11 @@ describe("generation request repository", () => {
     expect(client.lastCreateArgs).toMatchObject({
       data: {
         userId: "user_a",
+        rawPrompt: "Create a Brazilian funk launch concept.",
+        enrichedPrompt: "Create a Brazilian funk launch concept.",
+        region: null,
+        ageRange: null,
+        gender: null,
         status: "pending",
         platformOutputs: {
           create: [
@@ -34,6 +39,81 @@ describe("generation request repository", () => {
         },
       },
       include: { platformOutputs: true },
+    });
+  });
+
+  it("stores raw and enriched prompts when audience is provided", async () => {
+    const client = createGenerationClient();
+    const repository = new GenerationRequestRepository(client);
+
+    await repository.createForUser({
+      userId: "user_a",
+      rawPrompt: "Create a Brazilian funk launch concept.",
+      audience: {
+        region: "Brazil",
+        age_range: "18-24",
+        gender: "female",
+      },
+      platforms: ["youtube"],
+    });
+
+    expect(client.lastCreateArgs).toMatchObject({
+      data: {
+        rawPrompt: "Create a Brazilian funk launch concept.",
+        region: "Brazil",
+        ageRange: "18-24",
+        gender: "female",
+      },
+    });
+    expect(getCreateData(client.lastCreateArgs).enrichedPrompt).toContain(
+      "Original music concept:\nCreate a Brazilian funk launch concept.",
+    );
+    expect(getCreateData(client.lastCreateArgs).enrichedPrompt).toContain(
+      "- Target region: Brazil",
+    );
+    expect(getCreateData(client.lastCreateArgs).enrichedPrompt).toContain(
+      "- Target age range: 18-24",
+    );
+    expect(getCreateData(client.lastCreateArgs).enrichedPrompt).toContain(
+      "- Target gender: Female",
+    );
+  });
+
+  it("stores the raw prompt as the enriched prompt without audience", async () => {
+    const client = createGenerationClient();
+    const repository = new GenerationRequestRepository(client);
+
+    await repository.createForUser({
+      userId: "user_a",
+      rawPrompt: "Create a moody synth-pop release plan.",
+      platforms: ["spotify"],
+    });
+
+    expect(client.lastCreateArgs).toMatchObject({
+      data: {
+        rawPrompt: "Create a moody synth-pop release plan.",
+        enrichedPrompt: "Create a moody synth-pop release plan.",
+      },
+    });
+  });
+
+  it("stores audience fields as queryable columns", async () => {
+    const client = createGenerationClient();
+    const repository = new GenerationRequestRepository(client);
+
+    await repository.createForUser({
+      userId: "user_a",
+      rawPrompt: "Create a regional corridos release plan.",
+      audience: { region: "Mexico" },
+      platforms: ["tiktok"],
+    });
+
+    expect(client.lastCreateArgs).toMatchObject({
+      data: {
+        region: "Mexico",
+        ageRange: null,
+        gender: null,
+      },
     });
   });
 
@@ -124,4 +204,8 @@ function createGenerationClient(findUniqueResult: unknown = null) {
   };
 
   return client;
+}
+
+function getCreateData(args: unknown) {
+  return (args as { data: { enrichedPrompt: string } }).data;
 }

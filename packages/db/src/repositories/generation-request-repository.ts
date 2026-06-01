@@ -1,4 +1,8 @@
-import type { Platform } from "@melotech/shared";
+import {
+  buildAudiencePrompt,
+  type AudienceTargeting,
+  type Platform,
+} from "@melotech/shared";
 
 type GenerationRequestDelegate = {
   create(args: unknown): Promise<unknown>;
@@ -14,10 +18,7 @@ export type GenerationRepositoryClient = {
 export type CreateGenerationForUserInput = {
   userId: string;
   rawPrompt: string;
-  enrichedPrompt?: string | null;
-  region?: string | null;
-  ageRange?: string | null;
-  gender?: string | null;
+  audience?: AudienceTargeting | null;
   platforms: readonly Platform[];
 };
 
@@ -30,14 +31,21 @@ export class GenerationRequestRepository {
   constructor(private readonly client: GenerationRepositoryClient) {}
 
   createForUser(input: CreateGenerationForUserInput) {
+    // Enrichment happens before the database write.
+    // The queued worker can then read the exact prompt that should be sent
+    // through the AI pipeline without recomputing audience context.
+    const enrichedPrompt = buildAudiencePrompt(input.rawPrompt, input.audience);
+
     return this.client.generationRequest.create({
       data: {
         userId: input.userId,
         rawPrompt: input.rawPrompt,
-        enrichedPrompt: input.enrichedPrompt ?? input.rawPrompt,
-        region: input.region ?? null,
-        ageRange: input.ageRange ?? null,
-        gender: input.gender ?? null,
+        enrichedPrompt,
+        // Store audience facts independently so history and analytics can
+        // filter or display them without parsing the enriched prompt.
+        region: input.audience?.region ?? null,
+        ageRange: input.audience?.age_range ?? null,
+        gender: input.audience?.gender ?? null,
         status: "pending",
         // Platform rows start pending. The worker owns later status changes.
         platformOutputs: {
@@ -78,4 +86,3 @@ export class GenerationRequestRepository {
     });
   }
 }
-
