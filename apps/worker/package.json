@@ -1,0 +1,31 @@
+{
+  "name": "@melotech/worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@melotech/config": "workspace:*",
+    "@melotech/shared": "workspace:*",
+    "@melotech/db": "workspace:*",
+    "@melotech/queue": "workspace:*",
+    "@melotech/realtime": "workspace:*",
+    "@melotech/ai": "workspace:*",
+    "@melotech/embeddings": "workspace:*",
+    "@melotech/billing": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.2",
+    "tsx": "^4.19.4",
+    "@types/node": "^22.15.3"
+  }
+}

@@ -31,6 +31,7 @@ Design language:
 - Implement features in the simplest possible way
 - Keep files small and focused (<300 lines)
 - Test after every meaningful change
+- Always use pnpm for managing packages
 - Focus on core functionality before optimization
 - Use clear, consistent naming
 - Think thoroughly before coding. Write 2-3 reasoning paragraphs.
