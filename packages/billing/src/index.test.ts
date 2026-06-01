@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { BILLING_VERSION } from "./index.js";
 
 describe("billing smoke", () => {
@@ -6,3 +6,4 @@ describe("billing smoke", () => {
     expect(BILLING_VERSION).toBe("1.0.0");
   });
 });
+

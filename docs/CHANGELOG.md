@@ -1,5 +1,18 @@
 # Changelog
 
+## Phase 03 — Credits, Billing Ledger, and Usage Analytics
+
+Added the `@melotech/billing` domain with server-owned platform pricing, reservation cost calculation, wallet creation, demo wallet ensuring, credit grants, reservations, platform captures, releases, idempotency handling, ledger history, usage analytics, and client credit-field rejection.
+Added a Prisma schema for credit wallets, immutable ledger entries, credit reservations, generation relation anchors, ledger entry types, reservation statuses, unique wallet ownership, and unique ledger idempotency keys.
+Added unit coverage for platform pricing, duplicate and unsupported platform rejection, wallet uniqueness, ledger idempotency, reservation balance movement, capture and release idempotency, failed-output zero-charge behavior, signup wallet creation, and daily, weekly, and monthly usage analytics.
+
+## Phase 02 — Database, Auth, and User Ownership
+
+Added the Prisma 7 foundation for `@melotech/db`, including package migration commands, generated-client pre-scripts, Prisma config, a safe local-development singleton, and a database health utility.
+Integrated Better Auth in the web app with the Prisma adapter, email/password auth, the App Router catch-all route, server session helpers, and client auth helpers.
+Extended the schema so Better Auth users are the application users, added session, account, and verification tables, and added user-owned generation requests, platform outputs, ownership indexes, and unique platform output constraints.
+Added user-scoped generation and platform output repositories so web-facing reads require `userId`, while worker lookup can load by generation id and still returns ownership.
+
 ## Phase 01 — Shared Types, Schemas, and Runtime Config
 
 Added shared platform contracts for Spotify, TikTok, and YouTube with one canonical platform list, Zod validation, derived TypeScript types, and display metadata.

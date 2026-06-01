@@ -19,6 +19,9 @@ pnpm-debug.log*
 .env.local
 .env.*.local
 
+# Prisma 7 generates a local typed client for the db package.
+packages/db/src/generated/
+
 # OS files
 .DS_Store
 Thumbs.db

@@ -12,28 +12,29 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@melotech/ai": "workspace:*",
+    "@melotech/billing": "workspace:*",
     "@melotech/config": "workspace:*",
-    "@melotech/shared": "workspace:*",
     "@melotech/db": "workspace:*",
+    "@melotech/embeddings": "workspace:*",
     "@melotech/queue": "workspace:*",
     "@melotech/realtime": "workspace:*",
-    "@melotech/ai": "workspace:*",
-    "@melotech/embeddings": "workspace:*",
-    "@melotech/billing": "workspace:*",
+    "@melotech/shared": "workspace:*",
+    "better-auth": "^1.6.13",
     "next": "^16.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "zod": "^3.24.3"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "typescript": "^5.8.3",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
     "@types/node": "^22.15.3",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
-    "vitest": "^3.1.2",
     "@vitejs/plugin-react": "^4.4.1",
     "jsdom": "^26.1.0",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/jest-dom": "^6.6.3"
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.2"
   }
 }

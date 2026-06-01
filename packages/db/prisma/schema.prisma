@@ -1,0 +1,208 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Platform {
+  spotify
+  tiktok
+  youtube
+}
+
+enum GenerationStatus {
+  pending
+  processing
+  completed
+  partial
+  failed
+}
+
+enum PlatformOutputStatus {
+  pending
+  processing
+  completed
+  failed
+  completed_from_cache
+}
+
+enum CreditLedgerEntryType {
+  grant
+  reservation_hold
+  platform_capture
+  reservation_release
+  adjustment
+}
+
+enum CreditReservationStatus {
+  active
+  captured
+  partially_captured
+  released
+  cancelled
+}
+
+model User {
+  id            String   @id
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions           Session[]
+  accounts           Account[]
+  creditWallet       CreditWallet?
+  creditLedger       CreditLedgerEntry[]
+  creditReservations CreditReservation[]
+  generationRequests GenerationRequest[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model GenerationRequest {
+  id             String           @id @default(cuid())
+  userId         String
+  rawPrompt      String
+  enrichedPrompt String?
+  region         String?
+  ageRange       String?
+  gender         String?
+  status         GenerationStatus @default(pending)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platformOutputs   PlatformOutput[]
+  creditReservation CreditReservation?
+  creditLedger      CreditLedgerEntry[]
+
+  @@index([userId, createdAt])
+  @@index([userId, status, createdAt])
+  @@index([status, createdAt])
+}
+
+model PlatformOutput {
+  id                  String               @id @default(cuid())
+  generationRequestId String
+  platform            Platform
+  status              PlatformOutputStatus @default(pending)
+  content             Json?
+  errorMessage        String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  generationRequest GenerationRequest @relation(fields: [generationRequestId], references: [id], onDelete: Cascade)
+
+  @@unique([generationRequestId, platform])
+  @@index([generationRequestId, status])
+  @@index([platform, status])
+}
+
+model CreditWallet {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  availableCredits Int     @default(0)
+  reservedCredits  Int     @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ledgerEntries CreditLedgerEntry[]
+}
+
+model CreditReservation {
+  id                  String                  @id @default(cuid())
+  userId              String
+  generationRequestId String                  @unique
+  reservedCredits     Int
+  capturedCredits     Int                     @default(0)
+  releasedCredits     Int                     @default(0)
+  status              CreditReservationStatus @default(active)
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  generationRequest GenerationRequest   @relation(fields: [generationRequestId], references: [id], onDelete: Cascade)
+  ledgerEntries     CreditLedgerEntry[]
+
+  @@index([userId, status])
+}
+
+model CreditLedgerEntry {
+  id                  String                @id @default(cuid())
+  userId              String
+  walletId            String
+  reservationId       String?
+  generationRequestId String?
+  platform            Platform?
+  type                CreditLedgerEntryType
+  amount              Int
+  idempotencyKey      String                @unique
+  metadata            Json?
+  createdAt           DateTime              @default(now())
+
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet            CreditWallet       @relation(fields: [walletId], references: [id], onDelete: Restrict)
+  reservation       CreditReservation? @relation(fields: [reservationId], references: [id], onDelete: Restrict)
+  generationRequest GenerationRequest? @relation(fields: [generationRequestId], references: [id], onDelete: Restrict)
+
+  // Ledger rows are immutable by application rule.
+  // Balance corrections must be represented as new adjustment rows.
+  @@index([userId, createdAt])
+  @@index([userId, type, createdAt])
+  @@unique([reservationId, platform, type])
+}
