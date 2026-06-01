@@ -32,6 +32,19 @@ services:
     expose:
       - "6379"
 
+  db-migrate:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: deps
+    command: >
+      sh -c "cd /app && pnpm --filter=@melotech/db db:push"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   web:
     build:
       context: .
@@ -63,6 +76,8 @@ services:
     expose:
       - "3000"
     depends_on:
+      db-migrate:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
@@ -93,6 +108,8 @@ services:
       PLATFORM_CREDIT_COST_TIKTOK: ${PLATFORM_CREDIT_COST_TIKTOK}
       PLATFORM_CREDIT_COST_YOUTUBE: ${PLATFORM_CREDIT_COST_YOUTUBE}
     depends_on:
+      db-migrate:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
