@@ -66,3 +66,16 @@ export class StructuredOutputError extends SafeApplicationError {
     );
   }
 }
+
+export class UnsupportedPlatformGeneratorError extends SafeApplicationError {
+  constructor(metadata?: SafeErrorMetadata, cause?: unknown) {
+    // Registry failures should name the platform value without exposing prompts,
+    // provider internals, or any other request payload.
+    super(
+      "UnsupportedPlatformGeneratorError",
+      "The requested platform is not supported.",
+      metadata,
+      cause,
+    );
+  }
+}

@@ -1,5 +1,12 @@
 # Changelog
 
+## Phase 06 — Platform Generators
+
+Added platform-specific generators for Spotify, TikTok, and YouTube in `@melotech/ai`, each delegating JSON generation and validation to `StructuredOutputService` instead of calling model providers directly.
+The generators now isolate platform prompt rules, schema selection, audience metadata handling, and safe structured output behavior behind a shared `PlatformGenerator` interface.
+Added a platform generator registry that returns generators by platform, preserves requested ordering for multi-platform jobs, and throws a safe unsupported-platform error for unknown platform values.
+Added unit coverage for interface implementations, registry lookup and ordering, provider independence, platform schema usage, audience-aware prompt forwarding, valid parsed outputs, and schema rejection paths.
+
 ## Phase 05 — AI Adapters and Structured Output Reliability
 
 Added the `@melotech/ai` generation reliability layer with a provider-agnostic `AIAdapter`, safe error taxonomy, Ollama provider, JSON extraction, platform output schemas, and a structured output service for validation, retries, and repairs.

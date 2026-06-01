@@ -4,6 +4,7 @@ import {
   JSONExtractionError,
   SchemaValidationError,
   StructuredOutputError,
+  UnsupportedPlatformGeneratorError,
 } from "./errors.js";
 
 const secret = "sk_test_secret_value";
@@ -56,5 +57,16 @@ describe("safe AI error taxonomy", () => {
       reason: "repairs_exhausted",
       rawSecret: secret,
     });
+  });
+
+  it("keeps unsupported platform generator errors safe", () => {
+    const error = new UnsupportedPlatformGeneratorError({
+      platform: "soundcloud",
+    });
+
+    expect(error.publicMessage).toBe(
+      "The requested platform is not supported.",
+    );
+    expect(error.metadata).toEqual({ platform: "soundcloud" });
   });
 });
