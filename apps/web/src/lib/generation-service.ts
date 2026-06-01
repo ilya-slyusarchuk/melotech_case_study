@@ -37,8 +37,8 @@ export async function createGeneration(
   // Rate limiting happens before any database writes or credit operations.
   await deps.rateLimiter.check(userId);
 
-  // Ensure the user has a wallet. This is idempotent and creates a wallet
-  // with demo credits if one does not already exist.
+  // Ensure the user has a wallet. This is idempotent and creates an empty
+  // wallet if one does not already exist.
   await deps.creditService.ensureWalletForUser(userId);
 
   // Create the generation request and pending platform outputs.

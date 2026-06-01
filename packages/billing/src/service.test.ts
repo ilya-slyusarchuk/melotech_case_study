@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { INITIAL_DEMO_CREDITS, type CreditService } from "./index.js";
+import { type CreditService } from "./index.js";
 import {
   createFundedService,
   createService,
@@ -214,11 +214,11 @@ describe("credit service balance mutations", () => {
 });
 
 describe("signup wallet creation", () => {
-  it("ensures a new user receives a demo wallet", async () => {
+  it("ensures a new user receives an empty wallet", async () => {
     const service = createService();
     const wallet = await service.ensureWalletForUser("user_a");
 
-    expect(wallet.availableCredits).toBe(INITIAL_DEMO_CREDITS);
+    expect(wallet.availableCredits).toBe(0);
   });
 
   it("ensure wallet is idempotent", async () => {
@@ -227,7 +227,7 @@ describe("signup wallet creation", () => {
     const secondWallet = await service.ensureWalletForUser("user_a");
 
     expect(secondWallet.id).toBe(firstWallet.id);
-    await expectBalance(service, "user_a", INITIAL_DEMO_CREDITS, 0);
+    await expectBalance(service, "user_a", 0, 0);
   });
 });
 

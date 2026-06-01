@@ -12,8 +12,6 @@ import type {
   UsageTimeframe,
 } from "./types.js";
 
-export const INITIAL_DEMO_CREDITS = 100;
-
 type MutationInput = {
   userId: string;
   idempotencyKey: string;
@@ -42,7 +40,7 @@ export class CreditService {
         return existingWallet;
       }
 
-      return transaction.createWallet(userId, INITIAL_DEMO_CREDITS);
+      return transaction.createWallet(userId, 0);
     });
   }
 

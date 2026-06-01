@@ -17,8 +17,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 workerjs
-COPY --from=builder /app/apps/worker/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/apps/worker ./apps/worker
 USER workerjs
-CMD ["node", "dist/index.js"]
+CMD ["node", "apps/worker/dist/index.js"]
