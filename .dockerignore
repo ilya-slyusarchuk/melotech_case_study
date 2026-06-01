@@ -1,0 +1,40 @@
+# Keep Docker build contexts small and deterministic.
+# Dependencies and build outputs are recreated inside the image build.
+node_modules
+**/node_modules
+.pnpm-store
+**/.pnpm-store
+
+# Build and cache outputs.
+.turbo
+**/.turbo
+dist
+**/dist
+.next
+**/.next
+coverage
+**/coverage
+
+# Local environment and machine-specific files.
+.env
+.env.*
+!.env.example
+.DS_Store
+**/.DS_Store
+
+# Git and local tooling metadata are not needed in runtime images.
+.git
+.gitignore
+.gitattributes
+.agents
+.mulch
+
+# Logs and temporary files.
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+tmp
+temp
+*.tmp
