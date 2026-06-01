@@ -49,7 +49,22 @@ Design language:
 # Building Process
 - Verify each new feature works by telling the user how to test it
 - DO NOT write complicated and confusing code. Opt for the simple & modular approach.
-- Never run, build, deploy the application unless the user explicitly asks you to. Don't run the lint, test, build, deploy commands.
+- Never run, build, deploy the application unless the user explicitly asks you to. Don't run the build and deploy commands.
+
+# Testing
+
+Write unit tests immediately after adding or modifying functionality.
+
+Rules:
+
+- Every meaningful code change must be accompanied by unit tests.
+- Tests are part of the implementation, not a cleanup task.
+- Cover happy paths, edge cases, and failure modes.
+- After finishing the implementation of a phase, run the full test suite.
+- If any existing tests fail, investigate and fix the root cause before continuing.
+- Iterate until the entire test suite passes cleanly.
+
+Running the suite verifies that nothing previously developed broke and that new tests pass.
 
 # Phase implementation and changelog
 
