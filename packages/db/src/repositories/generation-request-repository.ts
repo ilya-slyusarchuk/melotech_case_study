@@ -9,6 +9,7 @@ type GenerationRequestDelegate = {
   findFirst(args: unknown): Promise<unknown>;
   findMany(args: unknown): Promise<unknown[]>;
   findUnique(args: unknown): Promise<unknown>;
+  update(args: unknown): Promise<unknown>;
 };
 
 export type GenerationRepositoryClient = {
@@ -80,9 +81,18 @@ export class GenerationRequestRepository {
   }
 
   findByIdForWorker(generationRequestId: string) {
+    // Worker needs platform outputs to know what to generate,
+    // and the credit reservation to capture and release credits.
     return this.client.generationRequest.findUnique({
       where: { id: generationRequestId },
-      include: { platformOutputs: true },
+      include: { platformOutputs: true, creditReservation: true },
+    });
+  }
+
+  updateStatusForWorker(generationRequestId: string, status: string) {
+    return this.client.generationRequest.update({
+      where: { id: generationRequestId },
+      data: { status },
     });
   }
 }

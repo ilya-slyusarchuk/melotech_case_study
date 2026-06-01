@@ -13,19 +13,21 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@melotech/ai": "workspace:*",
+    "@melotech/billing": "workspace:*",
     "@melotech/config": "workspace:*",
-    "@melotech/shared": "workspace:*",
     "@melotech/db": "workspace:*",
+    "@melotech/embeddings": "workspace:*",
     "@melotech/queue": "workspace:*",
     "@melotech/realtime": "workspace:*",
-    "@melotech/ai": "workspace:*",
-    "@melotech/embeddings": "workspace:*",
-    "@melotech/billing": "workspace:*"
+    "@melotech/shared": "workspace:*",
+    "bullmq": "^5.77.7",
+    "ioredis": "^5.10.1"
   },
   "devDependencies": {
-    "typescript": "^5.8.3",
-    "vitest": "^3.1.2",
+    "@types/node": "^22.15.3",
     "tsx": "^4.19.4",
-    "@types/node": "^22.15.3"
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.2"
   }
 }

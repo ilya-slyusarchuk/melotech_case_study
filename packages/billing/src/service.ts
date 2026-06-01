@@ -198,7 +198,9 @@ export class CreditService {
     });
   }
 
-  releaseUnusedReservedCredits(input: MutationInput & { reservationId: string }) {
+  releaseUnusedReservedCredits(
+    input: MutationInput & { reservationId: string },
+  ) {
     return this.store.transaction(async (transaction) => {
       const existingEntry = await this.findIdempotentEntry(transaction, input);
       if (existingEntry) {
@@ -228,7 +230,8 @@ export class CreditService {
       await transaction.updateReservation(reservation.id, {
         capturedCredits: reservation.capturedCredits,
         releasedCredits: reservation.releasedCredits + unusedCredits,
-        status: reservation.capturedCredits > 0 ? "partially_captured" : "released",
+        status:
+          reservation.capturedCredits > 0 ? "partially_captured" : "released",
       });
 
       return transaction.createLedgerEntry({
@@ -243,6 +246,14 @@ export class CreditService {
         metadata: null,
       });
     });
+  }
+
+  findReservationForGeneration(
+    generationRequestId: string,
+  ): Promise<CreditReservation | null> {
+    return this.store.transaction(async (transaction) =>
+      transaction.findReservationByGenerationRequestId(generationRequestId),
+    );
   }
 
   readWalletBalance(userId: string): Promise<CreditWallet | null> {

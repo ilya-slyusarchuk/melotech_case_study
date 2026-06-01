@@ -2,3 +2,6 @@
 // All job queue interactions go through this package.
 
 export const QUEUE_VERSION = "1.0.0";
+
+export * from "./contracts.js";
+export * from "./producer.js";

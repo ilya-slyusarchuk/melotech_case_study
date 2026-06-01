@@ -9,6 +9,7 @@ type TestGenerationClient = GenerationRepositoryClient & {
   lastFindFirstArgs: unknown;
   lastFindManyArgs: unknown;
   lastFindUniqueArgs: unknown;
+  lastUpdateArgs: unknown;
 };
 
 describe("generation request repository", () => {
@@ -172,7 +173,19 @@ describe("generation request repository", () => {
     });
     expect(client.lastFindUniqueArgs).toMatchObject({
       where: { id: "generation_a" },
-      include: { platformOutputs: true },
+      include: { platformOutputs: true, creditReservation: true },
+    });
+  });
+
+  it("worker can update generation status", async () => {
+    const client = createGenerationClient();
+    const repository = new GenerationRequestRepository(client);
+
+    await repository.updateStatusForWorker("generation_a", "processing");
+
+    expect(client.lastUpdateArgs).toMatchObject({
+      where: { id: "generation_a" },
+      data: { status: "processing" },
     });
   });
 });
@@ -183,6 +196,7 @@ function createGenerationClient(findUniqueResult: unknown = null) {
     lastFindFirstArgs: null as unknown,
     lastFindManyArgs: null as unknown,
     lastFindUniqueArgs: null as unknown,
+    lastUpdateArgs: null as unknown,
     generationRequest: {
       create: async (args: unknown) => {
         client.lastCreateArgs = args;
@@ -199,6 +213,10 @@ function createGenerationClient(findUniqueResult: unknown = null) {
       findUnique: async (args: unknown) => {
         client.lastFindUniqueArgs = args;
         return findUniqueResult;
+      },
+      update: async (args: unknown) => {
+        client.lastUpdateArgs = args;
+        return { id: "generation_a", status: "updated" };
       },
     },
   };

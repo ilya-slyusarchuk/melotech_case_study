@@ -2,6 +2,7 @@ import type { Platform } from "@melotech/shared";
 
 type PlatformOutputDelegate = {
   createMany(args: unknown): Promise<unknown>;
+  updateMany(args: unknown): Promise<unknown>;
 };
 
 export type PlatformOutputRepositoryClient = {
@@ -23,5 +24,44 @@ export class PlatformOutputRepository {
       })),
     });
   }
-}
 
+  markProcessingForWorker(generationRequestId: string, platform: Platform) {
+    return this.client.platformOutput.updateMany({
+      where: { generationRequestId, platform },
+      data: { status: "processing" },
+    });
+  }
+
+  markCompletedForWorker(
+    generationRequestId: string,
+    platform: Platform,
+    content: unknown,
+  ) {
+    return this.client.platformOutput.updateMany({
+      where: { generationRequestId, platform },
+      data: { status: "completed", content },
+    });
+  }
+
+  markCompletedFromCacheForWorker(
+    generationRequestId: string,
+    platform: Platform,
+    content: unknown,
+  ) {
+    return this.client.platformOutput.updateMany({
+      where: { generationRequestId, platform },
+      data: { status: "completed_from_cache", content },
+    });
+  }
+
+  markFailedForWorker(
+    generationRequestId: string,
+    platform: Platform,
+    errorMessage?: string,
+  ) {
+    return this.client.platformOutput.updateMany({
+      where: { generationRequestId, platform },
+      data: { status: "failed", errorMessage: errorMessage ?? null },
+    });
+  }
+}

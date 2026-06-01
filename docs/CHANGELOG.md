@@ -1,5 +1,16 @@
 # Changelog
 
+## Phase 08 — Queue and Worker Pipeline
+
+Added the `@melotech/queue` package with a stable `generation` queue name, a minimal Zod-validated job payload schema containing only `generationRequestId`, and a mockable `GenerationQueueProducer` abstraction around BullMQ with conservative retry settings and inspectable failed jobs.
+Added the `@melotech/realtime` package with typed `PlatformUpdateEvent` and `GenerationUpdateEvent` contracts, a `RedisEventPublisher` for worker-to-web pub/sub, and an `InMemoryEventPublisher` for unit tests.
+Extended `@melotech/db` repositories with worker-specific update methods: `GenerationRequestRepository.updateStatusForWorker` and `PlatformOutputRepository.markProcessingForWorker`, `markCompletedForWorker`, `markCompletedFromCacheForWorker`, and `markFailedForWorker`.
+Added `CreditService.findReservationForGeneration` so the worker can locate reservations without direct store access.
+Implemented the `@melotech/worker` generation processor with a deterministic pipeline: load generation from Postgres, mark as processing, process each platform with isolated failures via `Promise.allSettled`, generate through the platform registry, store successful LLM outputs and semantic cache, capture credits with per-platform idempotency keys, attempt user-scoped cache fallback on failure, finalize generation status as completed/partial/failed, release unused reserved credits with a per-generation idempotency key, and publish progress events after each platform and at finalization.
+Added idempotency guards so re-processed completed platforms skip LLM generation, avoid duplicate credit captures, and do not overwrite already-terminal output rows.
+Added worker bootstrap with graceful shutdown on SIGTERM/SIGINT, BullMQ worker registration, and payload validation.
+Added unit coverage for queue contracts, producer behavior, payload validation, worker bootstrap lifecycle, generation status transitions, platform success/failure isolation, cache fallback sourcing, credit capture and release idempotency, and event publishing at every stage.
+
 ## Phase 07 — Embeddings and User-Scoped Similar Cache
 
 Added the `@melotech/embeddings` semantic fallback layer with a provider-agnostic `EmbeddingAdapter`, safe embedding provider errors, an OpenAI embedding provider using `text-embedding-3-small` by default, cosine similarity scoring, and a similar-result service.
