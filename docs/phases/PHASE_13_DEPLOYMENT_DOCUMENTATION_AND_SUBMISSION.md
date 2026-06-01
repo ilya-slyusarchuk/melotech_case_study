@@ -123,7 +123,7 @@ Architecture documentation must explain:
 - Why Zod output validation.
 - Why credit reservation and ledger.
 - How to add a new platform.
-- How to add a new AI provider.
+- How to add a new AI provider, including its base URL, API key, and required model env variable.
 - How to add a new embedding provider.
 - How to add a new audience field.
 

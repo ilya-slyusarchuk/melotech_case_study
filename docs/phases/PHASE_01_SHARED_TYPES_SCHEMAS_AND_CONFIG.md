@@ -91,6 +91,8 @@ Create shared contracts before implementing backend, worker, or frontend behavio
 - Create `packages/config`.
 - Split config by runtime: shared config, web config, and worker config.
 - Shared config includes database URL, Redis URL, app environment, AI provider configuration, embedding provider configuration, retry limits, similarity threshold, and platform credit settings.
+- AI provider configuration must include provider name, base URL, API key, and model env variables.
+- Every future AI provider must add an explicit model env variable alongside its base URL and API key.
 - Web config includes Better Auth URL and secret, public app URL, and any browser-safe public values.
 - Worker config excludes Better Auth variables unless strictly required.
 - Parse all env vars with Zod.
@@ -103,6 +105,7 @@ Create shared contracts before implementing backend, worker, or frontend behavio
 - Missing required env fails.
 - Numeric envs are coerced correctly.
 - Invalid URLs fail.
+- Missing AI provider model env fails.
 - Worker env does not require Better Auth variables.
 - Web env requires Better Auth variables.
 

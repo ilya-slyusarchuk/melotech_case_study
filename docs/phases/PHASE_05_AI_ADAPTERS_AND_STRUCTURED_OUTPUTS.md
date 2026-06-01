@@ -38,6 +38,8 @@ Create a model-provider-agnostic generation layer with validated structured outp
 
 - Implement `OllamaProvider` behind the `AIAdapter` interface.
 - Use env variables for base URL, API key, and model.
+- The model must be read from an explicit model env variable, not hard-coded in the provider.
+- Any future AI provider must require the same three env categories: base URL, API key, and model.
 - Support Ollama Cloud by sending authentication server-side only.
 - Provider errors must be wrapped in safe application errors.
 - Provider errors must never expose API keys.
@@ -46,6 +48,7 @@ Create a model-provider-agnostic generation layer with validated structured outp
 ### Tests immediately after this sub-phase
 
 - Provider sends model, system prompt, user prompt, and temperature.
+- Provider fails fast when the required model env variable is missing.
 - Provider returns raw text content.
 - Non-success HTTP responses throw a safe provider error.
 - Malformed provider responses throw a safe provider error.
@@ -54,6 +57,7 @@ Create a model-provider-agnostic generation layer with validated structured outp
 ### Acceptance criteria
 
 - Ollama is isolated and replaceable.
+- Adding another AI provider requires documenting and validating that provider's model env variable together with its base URL and API key.
 
 ## Sub-phase 05.3 — Platform output schemas
 
