@@ -28,7 +28,14 @@ export function extractJsonObject(rawText: string): unknown {
   try {
     return JSON.parse(candidateText.slice(range.start, range.end));
   } catch (error) {
-    throw new JSONExtractionError({ reason: "malformed_json" }, error);
+    throw new JSONExtractionError(
+      {
+        reason: "malformed_json",
+        parseError: error instanceof Error ? error.message : String(error),
+        hint: "Common causes: unescaped newlines inside string values, unescaped quotes, trailing commas, or missing closing braces.",
+      },
+      error,
+    );
   }
 }
 

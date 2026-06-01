@@ -11,9 +11,7 @@ describe("JSON extraction", () => {
   });
 
   it("extracts JSON wrapped in markdown code fences", () => {
-    expect(
-      extractJsonObject('```json\n{"hook":"Listen now"}\n```'),
-    ).toEqual({
+    expect(extractJsonObject('```json\n{"hook":"Listen now"}\n```')).toEqual({
       hook: "Listen now",
     });
   });
@@ -24,8 +22,19 @@ describe("JSON extraction", () => {
     );
   });
 
-  it("rejects malformed JSON", () => {
-    expect(() => extractJsonObject('{"title":}')).toThrow(JSONExtractionError);
+  it("rejects malformed JSON with parse error metadata", () => {
+    try {
+      extractJsonObject('{"title":}');
+      expect.fail("Expected JSONExtractionError to be thrown");
+    } catch (error) {
+      expect(error).toBeInstanceOf(JSONExtractionError);
+      const jsonError = error as JSONExtractionError;
+      expect(jsonError.metadata).toMatchObject({
+        reason: "malformed_json",
+        parseError: expect.stringContaining("Unexpected token"),
+        hint: expect.stringContaining("unescaped"),
+      });
+    }
   });
 
   it("rejects incomplete JSON", () => {

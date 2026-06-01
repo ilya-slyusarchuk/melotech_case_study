@@ -28,7 +28,10 @@ export class StructuredOutputService {
     request: StructuredOutputRequest<TOutput>,
   ): Promise<TOutput> {
     const firstResponse = await this.generateWithProviderRetries(request);
-    const firstValidation = this.parseAndValidate(firstResponse, request.schema);
+    const firstValidation = this.parseAndValidate(
+      firstResponse,
+      request.schema,
+    );
 
     if (firstValidation.success) {
       return firstValidation.value;
@@ -84,7 +87,8 @@ export class StructuredOutputService {
     invalidResponse: string,
     validationError: JSONExtractionError | SchemaValidationError,
   ): Promise<TOutput> {
-    let lastError: JSONExtractionError | SchemaValidationError = validationError;
+    let lastError: JSONExtractionError | SchemaValidationError =
+      validationError;
     let responseToRepair = invalidResponse;
 
     for (let repair = 1; repair <= request.maxRepairs; repair += 1) {
@@ -272,11 +276,18 @@ type RepairPromptInput = {
 };
 
 function buildRepairPrompt(input: RepairPromptInput): string {
-  // The repair model needs the original task, bad output, and validation facts.
-  // These details stay inside provider calls and are never copied to public errors.
+  // The repair model needs the original task, bad output, and specific
+  // validation facts. These details stay inside provider calls and are
+  // never copied to public errors.
   return [
     "Repair the structured JSON output.",
-    "Return one valid JSON object only. Do not include markdown.",
+    "Return one valid JSON object only. Do not include markdown fences.",
+    "Do not include prose before or after the JSON object.",
+    "Use double-quoted JSON keys and string values.",
+    "Do not use trailing commas.",
+    "Do not include literal line breaks inside JSON string values. Use \\n instead.",
+    "Do not use markdown formatting (e.g. **bold**) or emoji inside JSON string values.",
+    "All string values must be plain text on a single JSON line.",
     "",
     "Original user prompt:",
     input.originalUserPrompt,
@@ -296,7 +307,14 @@ function describeValidationError(
     return JSON.stringify(error.metadata?.issues ?? []);
   }
 
-  return JSON.stringify(error.metadata ?? { reason: "json_extraction_failed" });
+  // JSONExtractionError – surface parseError and hint so the repair
+  // prompt can tell the model exactly what went wrong.
+  const meta = error.metadata ?? {};
+  return JSON.stringify({
+    reason: meta.reason ?? "json_extraction_failed",
+    parseError: meta.parseError,
+    hint: meta.hint,
+  });
 }
 
 export const createStructuredOutputService = (adapter: AIAdapter) =>
