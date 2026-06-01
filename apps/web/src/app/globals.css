@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@theme {
+  /* Core backgrounds */
+  --color-bg-primary: #050505;
+  --color-bg-elevated: #0D0D0D;
+  --color-surface-glass: rgba(255, 255, 255, 0.06);
+
+  /* Text colors */
+  --color-text-primary: #F5F2EA;
+  --color-text-secondary: #A7A7A7;
+  --color-text-tertiary: #6F6F6F;
+
+  /* Borders */
+  --color-border-subtle: rgba(255, 255, 255, 0.12);
+  --color-border-active: rgba(255, 255, 255, 0.32);
+
+  /* Functional colors */
+  --color-success: #B8FF6A;
+  --color-warning: #FFE16A;
+  --color-error: #FF6B6B;
+  --color-processing: #9D8CFF;
+  --color-cache: #79E6F2;
+
+  /* Platform accents (used sparingly) */
+  --color-spotify: #1DB954;
+  --color-tiktok: #00F2EA;
+  --color-youtube: #FF0000;
+}
+
+/* Base styles for the dark Melotech aesthetic */
+html {
+  background-color: #050505;
+  color: #F5F2EA;
+}
+
+body {
+  background-color: #050505;
+  color: #F5F2EA;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0D0D0D;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}

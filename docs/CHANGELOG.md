@@ -1,5 +1,20 @@
 # Changelog
 
+## Phase 11 — Frontend Application
+
+Built the user-facing application with auth, generation, history, credits, usage analytics, and Melotech-aligned design.
+
+Created the authenticated dashboard layout with top navigation, credit balance display, and mobile-responsive collapse menu.
+Implemented login and signup pages using Better Auth with email/password, inline validation errors, and authenticated redirects.
+Built the generation form with prompt input, platform multi-select, optional audience targeting (region, age range, gender), and a live credit cost preview computed from server-owned platform pricing.
+Created the active generation detail view that shows status, prompt, audience chips, and side-by-side platform output cards supporting pending, processing, completed, failed, and cache fallback states. Integrated the existing `useGenerationEvents` hook for realtime SSE updates.
+Implemented the generation history page with platform filtering, prompt preview, status badges, audience metadata, and consumed credits. Each item links to its detail view.
+Built the usage page with wallet balance (available and reserved), an "Add 100 Credits" grant button, ledger history table with formatted entry types, and a minimal SVG bar chart for consumed credits with daily/weekly/monthly timeframe selectors.
+Added a complete set of custom UI primitives (Button, Card, Input, Textarea, Label, Badge, Select) styled with Tailwind CSS and the Melotech dark monochrome glass aesthetic defined in `04_DESIGN_LANGUAGE.md`.
+Installed Tailwind CSS v4, configured custom theme tokens in CSS, and added `globals.css` with the dark canvas and custom scrollbar styling.
+Wrote 90 tests covering UI components, layout components, hooks, and pages with zero regressions.
+Verified the entire monorepo test suite (`pnpm test`) and production build (`pnpm build`) pass cleanly.
+
 ## Phase 10 — Realtime Events and SSE
 
 Added Zod-validated event contracts in `@melotech/realtime` for `PlatformUpdateEvent`, `GenerationUpdateEvent`, and `CreditsUpdateEvent`, with a union `WorkerEvent` schema and inline platform enum values to avoid cross-package Zod v4 schema recognition issues.
