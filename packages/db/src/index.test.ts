@@ -24,7 +24,7 @@ describe("prisma schema", () => {
 
   it("keeps user email unique and relates sessions to users", () => {
     expect(schema).toContain("email         String   @unique");
-    expect(schema).toContain("sessions           Session[]");
+    expect(schema).toMatch(/sessions\s+Session\[\]/);
     expect(schema).toContain("userId    String");
     expect(schema).toContain("@@index([userId])");
   });
@@ -38,9 +38,19 @@ describe("prisma schema", () => {
 
   it("defines one wallet per user and idempotent credit ledger entries", () => {
     expect(schema).toContain("model CreditWallet");
-    expect(schema).toContain("userId          String   @unique");
+    expect(schema).toMatch(/userId\s+String\s+@unique/);
     expect(schema).toContain("model CreditLedgerEntry");
-    expect(schema).toContain("idempotencyKey      String                @unique");
+    expect(schema).toContain(
+      "idempotencyKey      String                @unique",
+    );
+  });
+
+  it("defines user-scoped similar result cache entries", () => {
+    expect(schema).toContain("model SimilarResultCache");
+    expect(schema).toContain("similarResultCaches SimilarResultCache[]");
+    expect(schema).toContain("outputJson Json");
+    expect(schema).toContain("embedding  Json");
+    expect(schema).toContain("@@index([userId, platform, createdAt])");
   });
 });
 

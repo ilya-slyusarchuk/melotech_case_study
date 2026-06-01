@@ -1,5 +1,12 @@
 # Changelog
 
+## Phase 07 — Embeddings and User-Scoped Similar Cache
+
+Added the `@melotech/embeddings` semantic fallback layer with a provider-agnostic `EmbeddingAdapter`, safe embedding provider errors, an OpenAI embedding provider using `text-embedding-3-small` by default, cosine similarity scoring, and a similar-result service.
+Added user-scoped similar-result cache persistence in `@melotech/db`, including the Prisma `SimilarResultCache` model and a repository that always queries by user and platform.
+The fallback service now embeds successful platform outputs into the cache, searches only same-user and same-platform results after generation failure, applies the configured similarity threshold, and prefers same-region cache hits when scores are close.
+Added unit coverage for adapter replacement, provider request and failure handling, safe API-key handling, cache ownership boundaries, platform filtering, similarity ranking, zero-vector handling, threshold misses, and region-aware tie-breaking.
+
 ## Phase 06 — Platform Generators
 
 Added platform-specific generators for Spotify, TikTok, and YouTube in `@melotech/ai`, each delegating JSON generation and validation to `StructuredOutputService` instead of calling model providers directly.

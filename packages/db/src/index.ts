@@ -7,3 +7,4 @@ export * from "./health.js";
 export * from "./prisma.js";
 export * from "./repositories/generation-request-repository.js";
 export * from "./repositories/platform-output-repository.js";
+export * from "./repositories/similar-result-cache-repository.js";
