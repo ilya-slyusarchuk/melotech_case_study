@@ -37,6 +37,7 @@ services:
       context: .
       dockerfile: apps/web/Dockerfile
       target: deps
+    restart: "no"
     command: >
       sh -c "cd /app && pnpm --filter=@melotech/db db:push"
     environment:
