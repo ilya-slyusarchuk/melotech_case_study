@@ -13,7 +13,7 @@
   },
   "scripts": {
     "prebuild": "pnpm db:generate",
-    "build": "tsc",
+    "build": "tsc && node scripts/patch-generated-imports.js",
     "dev": "tsc --watch",
     "db:generate": "prisma generate --schema prisma/schema.prisma",
     "db:push": "prisma db push --schema prisma/schema.prisma",
