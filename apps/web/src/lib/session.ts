@@ -24,7 +24,7 @@ export class UnauthorizedError extends Error {
 export async function getServerSession(): Promise<AuthenticatedSession | null> {
   const [{ headers }, { auth }] = await Promise.all([
     import("next/headers"),
-    import("./auth.js"),
+    import("./auth"),
   ]);
 
   return auth.api.getSession({
@@ -50,4 +50,3 @@ export async function requireUserId(
   const session = await requireSession(getSession);
   return session.user.id;
 }
-

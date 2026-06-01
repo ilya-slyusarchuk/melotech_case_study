@@ -1,5 +1,13 @@
 # Changelog
 
+## Phase 09 — Backend API, User Rate Limits, and Credit Endpoints
+
+Added `PrismaCreditStore` in `@melotech/billing` to bridge the `CreditStore` interface with Prisma transactions, enabling production use of `CreditService`.
+Implemented a Redis-backed fixed-window rate limiter in the web app, limiting generation creation to 3 requests per minute per authenticated user.
+Exposed authenticated REST endpoints: `POST /api/generations` (create with rate limiting, wallet ensuring, credit reservation, and queue enqueue), `GET /api/generations` (history with platform and status filters), `GET /api/generations/{id}` (single generation with outputs), `GET /api/credits/wallet`, `POST /api/credits/grant` (fixed 100-credit test grant), `GET /api/credits/ledger`, and `GET /api/credits/usage` (daily/weekly/monthly analytics).
+Refactored API route handlers so core logic accepts injected dependencies, making unit tests mockable without module-level mocking or a real database.
+Added comprehensive unit coverage for rate limiter behavior, generation creation success and failure paths (including credit release on enqueue failure), history filtering, generation retrieval, wallet reads, credit grants, ledger ordering, and usage timeframe validation.
+
 ## Phase 08 — Queue and Worker Pipeline
 
 Added the `@melotech/queue` package with a stable `generation` queue name, a minimal Zod-validated job payload schema containing only `generationRequestId`, and a mockable `GenerationQueueProducer` abstraction around BullMQ with conservative retry settings and inspectable failed jobs.

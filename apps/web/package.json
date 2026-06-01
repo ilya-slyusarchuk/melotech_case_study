@@ -21,6 +21,7 @@
     "@melotech/realtime": "workspace:*",
     "@melotech/shared": "workspace:*",
     "better-auth": "^1.6.13",
+    "ioredis": "^5.10.1",
     "kysely": "0.28.17",
     "next": "^16.0.0",
     "react": "^19.1.0",
